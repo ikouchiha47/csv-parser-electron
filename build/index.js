@@ -50,27 +50,27 @@ function getCSVHeader(filepath, cb) {
 }
 
 function getCSVData(filepath, start, end, cb) {
-    if (!readStream) readStream = fs.createReadStream(filepath);
-    if (!parseStream) parseStream = readStream.pipe(parse);
+    readStream = fs.createReadStream(filepath);
+    parseStream = readStream.pipe(csv.parse());
 
     var transform = readNLines(start, end, true);
     var data = [];
-
-    console.log(start, end);
 
     parseStream.pipe(transform).on('readable', function () {
         var tdata = transform.read();
 
         if (tdata) data.push(tdata);
     }).on('finish', function () {
-        console.log(data);
         cb(null, data);
     });
 }
 
 // const filePath = "./data/movies.csv"
-// getCSVHeader(filePath)
-// getCSVData(filePath, 2, 10)
+// getCSVHeader(filePath, (err, data) =>{ console.log(data) })
+// getCSVData(filePath, 1, 20, (err, data) => { console.log(data.length) })
+// setTimeout(() => {
+//   getCSVData(filePath, 2, 30, (err, data) => { console.log(data.length) })
+// })
 
 module.exports = {
     getCSVData: getCSVData,

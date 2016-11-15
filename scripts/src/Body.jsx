@@ -6,6 +6,7 @@ class Body extends React.Component {
   constructor(props) {
     super(props);
     this.state = { records: [] }
+    window.body = body
   }
 
   fetchBody(start, end) {

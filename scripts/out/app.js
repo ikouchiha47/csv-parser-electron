@@ -20459,6 +20459,7 @@ var Body = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (Body.__proto__ || Object.getPrototypeOf(Body)).call(this, props));
 
     _this.state = { records: [] };
+    window.body = body;
     return _this;
   }
 

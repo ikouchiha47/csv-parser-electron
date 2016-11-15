@@ -48,27 +48,27 @@ function getCSVHeader(filepath: string, cb) {
 }
 
 function getCSVData(filepath: string, start: number, end: number, cb) {
-  if(!readStream) readStream = fs.createReadStream(filepath)
-  if(!parseStream) parseStream = readStream.pipe(parse)
+  readStream = fs.createReadStream(filepath)
+  parseStream = readStream.pipe(csv.parse())
 
   let transform = readNLines(start, end, true)
   let data = []
-
-  console.log(start, end);
 
   parseStream.pipe(transform).on('readable', () => {
     let tdata = transform.read()
 
     if(tdata) data.push(tdata)
   }).on('finish', () => {
-    console.log(data)
     cb(null, data)
   })
 }
 
 // const filePath = "./data/movies.csv"
-// getCSVHeader(filePath)
-// getCSVData(filePath, 2, 10)
+// getCSVHeader(filePath, (err, data) =>{ console.log(data) })
+// getCSVData(filePath, 1, 20, (err, data) => { console.log(data.length) })
+// setTimeout(() => {
+//   getCSVData(filePath, 2, 30, (err, data) => { console.log(data.length) })
+// })
 
 module.exports = {
     getCSVData: getCSVData,
