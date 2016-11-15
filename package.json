@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron main.js",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
-    "compile": "browserify --ignore-missing --no-builtins --no-commondir --insert-global-vars=\"global\" --no-browser-field -t [ babelify ] scripts/src/app.js -o scripts/out/app.js",
+    "compile-src": "babel src -d build",
+    "compile-front": "browserify --ignore-missing --no-builtins --no-commondir --insert-global-vars=\"global\" --no-browser-field -t [ babelify ] scripts/src/app.js -o scripts/out/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

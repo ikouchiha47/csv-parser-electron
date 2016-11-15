@@ -50,14 +50,20 @@ function getCSVHeader(filepath, cb) {
 }
 
 function getCSVData(filepath, start, end, cb) {
+    if (!readStream) readStream = fs.createReadStream(filepath);
+    if (!parseStream) parseStream = readStream.pipe(parse);
+
     var transform = readNLines(start, end, true);
     var data = [];
+
+    console.log(start, end);
 
     parseStream.pipe(transform).on('readable', function () {
         var tdata = transform.read();
 
         if (tdata) data.push(tdata);
     }).on('finish', function () {
+        console.log(data);
         cb(null, data);
     });
 }

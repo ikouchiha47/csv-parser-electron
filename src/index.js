@@ -22,7 +22,7 @@ function readNLines(start: number, end: number, skipHeader: boolean = true) {
         } else {
             result = null
         }
-        
+
         rowCount++;
         cb(null, result)
     })
@@ -48,16 +48,22 @@ function getCSVHeader(filepath: string, cb) {
 }
 
 function getCSVData(filepath: string, start: number, end: number, cb) {
-    let transform = readNLines(start, end, true)
-    let data = []
+  if(!readStream) readStream = fs.createReadStream(filepath)
+  if(!parseStream) parseStream = readStream.pipe(parse)
 
-    parseStream.pipe(transform).on('readable', () => {
-        let tdata = transform.read()
-    
-        if(tdata) data.push(tdata)
-    }).on('finish', () => {
-        cb(null, data)
-    })
+  let transform = readNLines(start, end, true)
+  let data = []
+
+  console.log(start, end);
+
+  parseStream.pipe(transform).on('readable', () => {
+    let tdata = transform.read()
+
+    if(tdata) data.push(tdata)
+  }).on('finish', () => {
+    console.log(data)
+    cb(null, data)
+  })
 }
 
 // const filePath = "./data/movies.csv"
