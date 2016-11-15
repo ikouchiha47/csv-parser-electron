@@ -8,10 +8,16 @@ class Body extends React.Component {
     this.state = { records: [] }
   }
 
-  componentDidMount() {
-    body("./data/movies.csv",1, 20, (err, data) => {
+  fetchBody(start, end) {
+    body("./data/movies.csv", start, end, (err, data) => {
+      console.log(start, end, data)
       this.setState({ records: data })
     })
+  }
+
+  componentDidMount() {
+    this.fetchBody(1, 20);
+    setTimeout(() => this.fetchBody(2, 30), 2000)
   }
 
   renderDataList() {

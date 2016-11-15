@@ -20463,13 +20463,24 @@ var Body = function (_React$Component) {
   }
 
   _createClass(Body, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
+    key: "fetchBody",
+    value: function fetchBody(start, end) {
       var _this2 = this;
 
-      body("./data/movies.csv", 1, 20, function (err, data) {
+      body("./data/movies.csv", start, end, function (err, data) {
+        console.log(start, end, data);
         _this2.setState({ records: data });
       });
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this3 = this;
+
+      this.fetchBody(1, 20);
+      setTimeout(function () {
+        return _this3.fetchBody(2, 30);
+      }, 2000);
     }
   }, {
     key: "renderDataList",
