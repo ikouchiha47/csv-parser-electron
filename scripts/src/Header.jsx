@@ -3,7 +3,7 @@ import { remote } from "electron"
 const header = remote.require('./main').getCSVHeader
 
 class Header extends React.Component {
-  constructor(props) {
+  constructor(props: object) {
     super(props)
     this.state = { data: [] }
   }

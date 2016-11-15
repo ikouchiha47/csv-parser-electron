@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "electron main.js",
-    "flow": "flow; test $? -eq 0 -o $? -eq 2",
-    "compile-src": "babel src -d build",
-    "compile-front": "browserify --ignore-missing --no-builtins --no-commondir --insert-global-vars=\"global\" --no-browser-field -t [ babelify ] scripts/src/app.js -o scripts/out/app.js",
+    "everything": "npm run compile-src && npm run compile-front && npm start",
+    "flow": "node_modules/flow-bin/cli.js; test $? -eq 0 -o $? -eq 2",
+    "compile-src": "node_modules/flow-remove-types/flow-remove-types src --out-dir build",
+    "compile-front": "node_modules/browserify/bin/cmd.js --ignore-missing --no-builtins --no-commondir --insert-global-vars=\"global\" --no-browser-field -t [ babelify ] scripts/src/app.js -o scripts/out/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -20,10 +21,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "babel-cli": "^6.18.0",
     "babel-plugin-transform-flow-strip-types": "^6.18.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-react": "^6.16.0",
     "babelify": "^7.3.0",
-    "flow-bin": "^0.35.0"
+    "browserify": "^13.1.1",
+    "flow": "^0.2.3",
+    "flow-bin": "^0.35.0",
+    "flow-remove-types": "^1.0.5"
   }
 }

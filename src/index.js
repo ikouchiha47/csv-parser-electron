@@ -2,12 +2,14 @@
 
 const csv = require('csv')
 const fs  = require('fs')
-const parse = csv.parse()
-
-let readStream;
-let parseStream;
 
 /* @flow */
+
+function initStream(filepath: string) {
+    let readStream = fs.createReadStream(filepath)
+    return readStream.pipe(csv.parse())
+}
+
 function readNLines(start: number, end: number, skipHeader: boolean = true) {
     let rowCount = 0
     let transform = csv.transform((row, cb) => {
@@ -31,11 +33,10 @@ function readNLines(start: number, end: number, skipHeader: boolean = true) {
 }
 
 function getCSVHeader(filepath: string, cb) {
-    if(!readStream) readStream = fs.createReadStream(filepath)
+    let parseStream = initStream(filepath)
     let transform = readNLines(0, 0, false);
     let header;
 
-    if(!parseStream) parseStream = readStream.pipe(parse)
     parseStream.pipe(transform).on('readable', () => {
         let _header = transform.read()
 
@@ -48,9 +49,7 @@ function getCSVHeader(filepath: string, cb) {
 }
 
 function getCSVData(filepath: string, start: number, end: number, cb) {
-  readStream = fs.createReadStream(filepath)
-  parseStream = readStream.pipe(csv.parse())
-
+  let parseStream = initStream(filepath)
   let transform = readNLines(start, end, true)
   let data = []
 
