@@ -20,7 +20,7 @@ app.on('ready', function() {
           devTools: true
         }
     });
-    mainWindow.webContents.openDevTools()
+    //mainWindow.webContents.openDevTools()
     mainWindow.loadURL(`file://${__dirname}/views/index.html`);
 });
 

@@ -20448,6 +20448,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+var isFilePresent = _electron.remote.require('./main').isFilePresent;
+var body = _electron.remote.require('./main').getCSVData;
+
 var Body = function (_React$Component) {
   _inherits(Body, _React$Component);
 
@@ -20456,7 +20459,7 @@ var Body = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (Body.__proto__ || Object.getPrototypeOf(Body)).call(this, props));
 
-    _this.state = { records: [], fileLoaded: false };
+    _this.state = { records: [], fileLoaded: false, fileName: null };
     _this.handleDrop = _this.handleDrop.bind(_this);
     _this.preventDefault = _this.preventDefault.bind(_this);
     return _this;
@@ -20464,7 +20467,13 @@ var Body = function (_React$Component) {
 
   _createClass(Body, [{
     key: "fetchBody",
-    value: function fetchBody(start, end) {}
+    value: function fetchBody(fileName, start, end) {
+      var _this2 = this;
+
+      body(fileName, start, end, function (err, data) {
+        _this2.setState({ fileLoaded: true, records: data });
+      });
+    }
   }, {
     key: "preventDefault",
     value: function preventDefault(e) {
@@ -20475,10 +20484,12 @@ var Body = function (_React$Component) {
     value: function handleDrop(e) {
       e.preventDefault();
       var file = e.dataTransfer.files[0] && e.dataTransfer.files[0].path;
-
       if (file) {
-        // load the csv file data
-        alert(file);
+        var filePresent = isFilePresent(file);
+
+        if (filePresent) {
+          this.fetchBody(file, 1, 20);
+        }
       }
     }
   }, {

@@ -5,12 +5,23 @@ const fs  = require('fs')
 
 /* @flow */
 
+function isFilePresent(filepath: string) {
+  try {
+    fs.accessSync(filepath)
+    return true
+  } catch(e) {
+    return false
+  }
+}
+
 function initStream(filepath: string) {
     let readStream = fs.createReadStream(filepath)
     return readStream.pipe(csv.parse())
 }
 
-function readNLines(start: number, end: number, skipHeader: boolean = true) {
+function readNLines(start: number, end: number, skipHeader: boolean) {
+    if(skipHeader === undefined) skipHeader = true
+
     let rowCount = 0
     let transform = csv.transform((row, cb) => {
         let result;
@@ -71,5 +82,6 @@ function getCSVData(filepath: string, start: number, end: number, cb) {
 
 module.exports = {
     getCSVData: getCSVData,
+    isFilePresent: isFilePresent,
     getCSVHeader: getCSVHeader
 }

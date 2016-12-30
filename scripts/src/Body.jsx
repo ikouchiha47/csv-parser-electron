@@ -1,15 +1,21 @@
 import React from "react"
 import { remote } from "electron"
 
+const isFilePresent = remote.require('./main').isFilePresent;
+const body          = remote.require('./main').getCSVData;
+
 class Body extends React.Component {
   constructor(props: object) {
     super(props);
-    this.state = { records: [], fileLoaded: false }
+    this.state = { records: [], fileLoaded: false, fileName: null }
     this.handleDrop = this.handleDrop.bind(this)
     this.preventDefault = this.preventDefault.bind(this)
   }
 
-  fetchBody(start: number, end: number) {
+  fetchBody(fileName: string, start: number, end: number) {
+    body(fileName, start, end, (err, data) => {
+      this.setState({ fileLoaded: true, records: data })
+    })
   }
   
   preventDefault(e) {
@@ -19,10 +25,12 @@ class Body extends React.Component {
   handleDrop(e) {
     e.preventDefault();
     let file = e.dataTransfer.files[0] && e.dataTransfer.files[0].path
-
     if(file) {
-      // load the csv file data
-      alert(file)
+      let filePresent = isFilePresent(file)
+
+      if(filePresent) {
+        this.fetchBody(file, 1, 20)
+      }
     }
   }
   
