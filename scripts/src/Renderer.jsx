@@ -2,15 +2,21 @@ import React from "react"
 import { remote } from "electron"
 import Header from "./Header.jsx"
 
-const isFilePresent = remote.require('./main').isFilePresent;
-const { getCSVHeader, getCSVData }  = remote.require('./main');
+const { getCSVHeader, getCSVData, isFilePresent, countLines } = remote.require('./main');
 
 class Body extends React.Component {
     constructor(props: object) {
         super(props);
-        this.state = { records: [], headerData: [], fileLoaded: false }
+
+        this.state = { records: [], headerData: [], fileLoaded: false, recordsLength: 0 }
         this.handleDrop = this.handleDrop.bind(this)
         this.preventDefault = this.preventDefault.bind(this)
+    }
+
+    fetchTotalLength(fileName) {
+        return new Promise((res, rej) => {
+            countLines(fileName, (err, data) => err ? rej(err) : res(data))
+        })
     }
 
     fetchBody(fileName: string, start: number, end: number) {
@@ -45,13 +51,18 @@ class Body extends React.Component {
             let filePresent = isFilePresent(fileName)
 
             if(filePresent) {
-                this.fetchHeader(fileName)
-                    .then(data => {
+                this.fetchTotalLength(fileName)
+                    .then(length => {
+                        this.setState({ recordsLength: +length });
+                        console.log(+length);
+                        return this.fetchHeader(fileName)
+                    }).then(data => {
                         this.setState({ headerData: data })
-                    }).then(() => {
                         return this.fetchBody(fileName, 1, 20)
                     }).then(data => {
                         this.setState({ fileLoaded: true, records: data })
+                    }).catch(e => {
+                        console.log("something went wrong", e)
                     })
             }
         }
@@ -64,8 +75,6 @@ class Body extends React.Component {
     }
 
     renderTable() {
-        console.log(this.state.headerData);
-
         return (
             <div>                
                 <table>

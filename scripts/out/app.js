@@ -20208,11 +20208,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var isFilePresent = _electron.remote.require('./main').isFilePresent;
-
 var _remote$require = _electron.remote.require('./main'),
     getCSVHeader = _remote$require.getCSVHeader,
-    getCSVData = _remote$require.getCSVData;
+    getCSVData = _remote$require.getCSVData,
+    isFilePresent = _remote$require.isFilePresent,
+    countLines = _remote$require.countLines;
 
 var Body = function (_React$Component) {
     _inherits(Body, _React$Component);
@@ -20222,13 +20222,22 @@ var Body = function (_React$Component) {
 
         var _this = _possibleConstructorReturn(this, (Body.__proto__ || Object.getPrototypeOf(Body)).call(this, props));
 
-        _this.state = { records: [], headerData: [], fileLoaded: false };
+        _this.state = { records: [], headerData: [], fileLoaded: false, recordsLength: 0 };
         _this.handleDrop = _this.handleDrop.bind(_this);
         _this.preventDefault = _this.preventDefault.bind(_this);
         return _this;
     }
 
     _createClass(Body, [{
+        key: "fetchTotalLength",
+        value: function fetchTotalLength(fileName) {
+            return new Promise(function (res, rej) {
+                countLines(fileName, function (err, data) {
+                    return err ? rej(err) : res(data);
+                });
+            });
+        }
+    }, {
         key: "fetchBody",
         value: function fetchBody(fileName, start, end) {
             return new Promise(function (res, rej) {
@@ -20263,12 +20272,17 @@ var Body = function (_React$Component) {
                 var filePresent = isFilePresent(fileName);
 
                 if (filePresent) {
-                    this.fetchHeader(fileName).then(function (data) {
+                    this.fetchTotalLength(fileName).then(function (length) {
+                        _this2.setState({ recordsLength: +length });
+                        console.log(+length);
+                        return _this2.fetchHeader(fileName);
+                    }).then(function (data) {
                         _this2.setState({ headerData: data });
-                    }).then(function () {
                         return _this2.fetchBody(fileName, 1, 20);
                     }).then(function (data) {
                         _this2.setState({ fileLoaded: true, records: data });
+                    }).catch(function (e) {
+                        console.log("something went wrong", e);
                     });
                 }
             }
@@ -20293,8 +20307,6 @@ var Body = function (_React$Component) {
     }, {
         key: "renderTable",
         value: function renderTable() {
-            console.log(this.state.headerData);
-
             return _react2.default.createElement(
                 "div",
                 null,

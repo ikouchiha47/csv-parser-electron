@@ -43,6 +43,11 @@ function readNLines(start: number, end: number, skipHeader: boolean) {
     return transform
 }
 
+function countLines(filepath: string, cb) {
+    let parser = csv.parse()
+    fs.createReadStream(filepath).pipe(parser).on('finish', () => cb(null, parser.count - 1))
+}
+
 function getCSVHeader(filepath: string, cb) {
     let parseStream = initStream(filepath)
     let transform = readNLines(0, 0, false);
@@ -81,7 +86,8 @@ function getCSVData(filepath: string, start: number, end: number, cb) {
 // })
 
 module.exports = {
-    getCSVData: getCSVData,
     isFilePresent: isFilePresent,
+    countLines: countLines,
+    getCSVData: getCSVData,
     getCSVHeader: getCSVHeader
 }
