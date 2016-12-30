@@ -4,26 +4,15 @@ import { remote } from "electron"
 class Header extends React.Component {
   constructor(props: object) {
     super(props)
-    this.state = { data: [] }
-  }
-
-  componentDidMount() {
-  }
-
-  renderListHeader() {
-    let els = this.state.data.map((d, i) => <li key={i}>{d}</li>)
-
-    return (
-      <ul className="csv-header-list">{els}</ul>
-    )
   }
 
   render() {
+    let els = this.props.data.map((d, i) => <th key={i}>{d}</th>)
+
     return (
-      <div className="header">
-        <h1>CSViewerr</h1>
-        { this.renderListHeader() }
-      </div>
+        <thead>
+            <tr>{els}</tr>
+        </thead>
     )
   }
 }
