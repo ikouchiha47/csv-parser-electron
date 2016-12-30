@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "electron main.js",
-    "everything": "npm run compile-src && npm run compile-front && npm start",
+    "everything": "npm run flow-compile && npm run compile-src && npm run compile-front && npm start",
     "flow": "node_modules/flow-bin/cli.js; test $? -eq 0 -o $? -eq 2",
-    "compile-src": "node_modules/flow-remove-types/flow-remove-types src --out-dir build",
+    "flow-compile": "node_modules/flow-remove-types/flow-remove-types src --out-dir build",
+    "compile-src": "node_modules/browserify/bin/cmd.js --ignore-missing --no-builtins --no-commondir --insert-global-vars=\"global\" --no-browser-field -t [ babelify ] build/index.js -o build/index.js",
     "compile-front": "node_modules/browserify/bin/cmd.js --ignore-missing --no-builtins --no-commondir --insert-global-vars=\"global\" --no-browser-field -t [ babelify ] scripts/src/app.js -o scripts/out/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

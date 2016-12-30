@@ -1,6 +1,5 @@
 import React from "react";
 import { remote } from "electron"
-const header = remote.require('./main').getCSVHeader
 
 class Header extends React.Component {
   constructor(props: object) {
@@ -9,9 +8,6 @@ class Header extends React.Component {
   }
 
   componentDidMount() {
-    header('./data/movies.csv', (err, data) => {
-      this.setState({data: data})
-    })
   }
 
   renderListHeader() {

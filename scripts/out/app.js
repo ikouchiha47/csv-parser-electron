@@ -20448,8 +20448,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var body = _electron.remote.require('./main').getCSVData;
-
 var Body = function (_React$Component) {
   _inherits(Body, _React$Component);
 
@@ -20458,30 +20456,30 @@ var Body = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (Body.__proto__ || Object.getPrototypeOf(Body)).call(this, props));
 
-    _this.state = { records: [] };
-    window.body = body;
+    _this.state = { records: [], fileLoaded: false };
+    _this.handleDrop = _this.handleDrop.bind(_this);
+    _this.preventDefault = _this.preventDefault.bind(_this);
     return _this;
   }
 
   _createClass(Body, [{
     key: "fetchBody",
-    value: function fetchBody(start, end) {
-      var _this2 = this;
-
-      body("./data/movies.csv", start, end, function (err, data) {
-        console.log(start, end, data);
-        _this2.setState({ records: data });
-      });
+    value: function fetchBody(start, end) {}
+  }, {
+    key: "preventDefault",
+    value: function preventDefault(e) {
+      e.preventDefault();
     }
   }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this3 = this;
+    key: "handleDrop",
+    value: function handleDrop(e) {
+      e.preventDefault();
+      var file = e.dataTransfer.files[0] && e.dataTransfer.files[0].path;
 
-      this.fetchBody(1, 20);
-      setTimeout(function () {
-        return _this3.fetchBody(2, 30);
-      }, 2000);
+      if (file) {
+        // load the csv file data
+        alert(file);
+      }
     }
   }, {
     key: "renderDataList",
@@ -20501,8 +20499,17 @@ var Body = function (_React$Component) {
       });
     }
   }, {
-    key: "render",
-    value: function render() {
+    key: "renderDropArea",
+    value: function renderDropArea() {
+      return _react2.default.createElement(
+        "div",
+        { id: "drop_area", onDragOver: this.preventDefault, onDrop: this.handleDrop },
+        "Drop Area"
+      );
+    }
+  }, {
+    key: "renderTable",
+    value: function renderTable() {
       return _react2.default.createElement(
         "table",
         null,
@@ -20512,6 +20519,11 @@ var Body = function (_React$Component) {
           this.renderDataList()
         )
       );
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      return this.state.fileLoaded ? this.renderTable() : this.renderDropArea();
     }
   }]);
 
@@ -20543,8 +20555,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var header = _electron.remote.require('./main').getCSVHeader;
-
 var Header = function (_React$Component) {
   _inherits(Header, _React$Component);
 
@@ -20559,13 +20569,7 @@ var Header = function (_React$Component) {
 
   _createClass(Header, [{
     key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this2 = this;
-
-      header('./data/movies.csv', function (err, data) {
-        _this2.setState({ data: data });
-      });
-    }
+    value: function componentDidMount() {}
   }, {
     key: "renderListHeader",
     value: function renderListHeader() {

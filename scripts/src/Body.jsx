@@ -1,37 +1,53 @@
 import React from "react"
 import { remote } from "electron"
-const body = remote.require('./main').getCSVData
 
 class Body extends React.Component {
   constructor(props: object) {
     super(props);
-    this.state = { records: [] }
-    window.body = body
+    this.state = { records: [], fileLoaded: false }
+    this.handleDrop = this.handleDrop.bind(this)
+    this.preventDefault = this.preventDefault.bind(this)
   }
 
   fetchBody(start: number, end: number) {
-    body("./data/movies.csv", start, end, (err, data) => {
-      console.log(start, end, data)
-      this.setState({ records: data })
-    })
+  }
+  
+  preventDefault(e) {
+    e.preventDefault()
   }
 
-  componentDidMount() {
-    this.fetchBody(1, 20);
-  }
+  handleDrop(e) {
+    e.preventDefault();
+    let file = e.dataTransfer.files[0] && e.dataTransfer.files[0].path
 
+    if(file) {
+      // load the csv file data
+      alert(file)
+    }
+  }
+  
   renderDataList() {
     return this.state.records.map((record, i) => {
       return (<tr key={`tr_${i}`}>{ record.map((data, j) => <td key={`td_${j}`}>{data}</td>) }</tr>)
     })
   }
 
-  render() {
+  renderDropArea() {
+    return (
+        <div id="drop_area" onDragOver={this.preventDefault} onDrop={this.handleDrop}>Drop Area</div>
+    )
+  }
+
+  renderTable() {
     return (
       <table>
         <tbody>{this.renderDataList()}</tbody>
       </table>
     )
+  }
+
+  render() {
+    return this.state.fileLoaded ? this.renderTable() : this.renderDropArea();
   }
 }
 
