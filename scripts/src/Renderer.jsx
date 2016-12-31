@@ -54,7 +54,6 @@ class Body extends React.Component {
                 this.fetchTotalLength(fileName)
                     .then(length => {
                         this.setState({ recordsLength: +length });
-                        console.log(+length);
                         return this.fetchHeader(fileName)
                     }).then(data => {
                         this.setState({ headerData: data })
