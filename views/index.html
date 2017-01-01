@@ -4,19 +4,45 @@
   <meta charset="UTF-8">
   <title>Document</title>
   <style>
-    .csv-header-list {
-      list-style: none;
-    }
-
-   .csv-header-list li {
-     display: inline-block;
-     padding: 0 20px;
+   html, body, div, p, tr, td, th {
+     margin: 0;
+     padding: 0;
+   }
+   table {
+     border-collapse: collapse;
    }
 
+   thead {
+     background-color: #DADADA;
+     /*f5f5f5*/
+   }
+
+   tr:first-child th {
+     border-color: #BBB;
+     text-align: center;
+   }
+
+   td:first-child, th:first-child {
+     padding-left: 25px;
+   }
+
+   td:last-child, th:last-child {
+     padding-right: 25px;
+   }
+
+   td, th {
+     border: 1px solid lightgray;
+     height: 30px;
+     padding: 2px 10px;
+     white-space: nowrap;
+   }
+
+   td {
+     text-align: left;
+   }
+   
    #drop_area {
      min-height: 80vh;
-     margin: 10px;
-     padding: 10px;
    } 
   </style>
 </head>

@@ -20185,7 +20185,7 @@ exports.default = Header;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -20214,126 +20214,200 @@ var _remote$require = _electron.remote.require('./main'),
     isFilePresent = _remote$require.isFilePresent,
     countLines = _remote$require.countLines;
 
+var visibleRows = 20;
+var cellHeight = 30 + (3 + 3) + (1 + 1);
+
+function debounce(func, wait, immediate) {
+  var timeout;
+
+  return function () {
+    var context = this,
+        args = arguments;
+    var later = function later() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+}
+
 var Body = function (_React$Component) {
-    _inherits(Body, _React$Component);
+  _inherits(Body, _React$Component);
 
-    function Body(props) {
-        _classCallCheck(this, Body);
+  function Body(props) {
+    _classCallCheck(this, Body);
 
-        var _this = _possibleConstructorReturn(this, (Body.__proto__ || Object.getPrototypeOf(Body)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (Body.__proto__ || Object.getPrototypeOf(Body)).call(this, props));
 
-        _this.state = { records: [], headerData: [], fileLoaded: false, recordsLength: 0 };
-        _this.handleDrop = _this.handleDrop.bind(_this);
-        _this.preventDefault = _this.preventDefault.bind(_this);
-        return _this;
+    _this.fileName = undefined;
+    _this.state = { records: [], headerData: [], fileLoaded: false, recordsLength: 0, start: 0, delta: 20 };
+    _this.handleDrop = _this.handleDrop.bind(_this);
+    _this.preventDefault = _this.preventDefault.bind(_this);
+    _this.handleScroll = debounce(_this.handleScroll, 1000).bind(_this);
+    return _this;
+  }
+
+  _createClass(Body, [{
+    key: "fetchTotalLength",
+    value: function fetchTotalLength() {
+      var _this2 = this;
+
+      return new Promise(function (res, rej) {
+        countLines(_this2.fileName, function (err, data) {
+          return err ? rej(err) : res(data);
+        });
+      });
     }
+  }, {
+    key: "fetchBody",
+    value: function fetchBody(start, end) {
+      var _this3 = this;
 
-    _createClass(Body, [{
-        key: "fetchTotalLength",
-        value: function fetchTotalLength(fileName) {
-            return new Promise(function (res, rej) {
-                countLines(fileName, function (err, data) {
-                    return err ? rej(err) : res(data);
-                });
-            });
-        }
-    }, {
-        key: "fetchBody",
-        value: function fetchBody(fileName, start, end) {
-            return new Promise(function (res, rej) {
-                getCSVData(fileName, start, end, function (err, data) {
-                    if (data && data.length) res(data);else if (!data) rej(Error("Invalid data"));else rej(err);
-                });
-            });
-        }
-    }, {
-        key: "fetchHeader",
-        value: function fetchHeader(fileName) {
-            return new Promise(function (res, rej) {
-                getCSVHeader(fileName, function (err, data) {
-                    if (data && data.length) res(data);else if (!data) rej(Error("Invalid data"));else rej(err);
-                });
-            });
-        }
-    }, {
-        key: "preventDefault",
-        value: function preventDefault(e) {
-            e.preventDefault();
-        }
-    }, {
-        key: "handleDrop",
-        value: function handleDrop(e) {
-            var _this2 = this;
+      return new Promise(function (res, rej) {
+        getCSVData(_this3.fileName, start, end, function (err, data) {
+          if (data && data.length) res(data);else if (!data) rej(Error("Invalid data"));else rej(err);
+        });
+      });
+    }
+  }, {
+    key: "fetchHeader",
+    value: function fetchHeader() {
+      var _this4 = this;
 
-            e.preventDefault();
-            var fileName = e.dataTransfer.files[0] && e.dataTransfer.files[0].path;
+      return new Promise(function (res, rej) {
+        getCSVHeader(_this4.fileName, function (err, data) {
+          if (data && data.length) res(data);else if (!data) rej(Error("Invalid data"));else rej(err);
+        });
+      });
+    }
+  }, {
+    key: "preventDefault",
+    value: function preventDefault(e) {
+      e.preventDefault();
+    }
+  }, {
+    key: "handleDrop",
+    value: function handleDrop(e) {
+      var _this5 = this;
 
-            if (fileName) {
-                var filePresent = isFilePresent(fileName);
+      e.preventDefault();
+      var fileName = e.dataTransfer.files[0] && e.dataTransfer.files[0].path;
+      this.fileName = fileName;
 
-                if (filePresent) {
-                    this.fetchTotalLength(fileName).then(function (length) {
-                        _this2.setState({ recordsLength: +length });
-                        console.log(+length);
-                        return _this2.fetchHeader(fileName);
-                    }).then(function (data) {
-                        _this2.setState({ headerData: data });
-                        return _this2.fetchBody(fileName, 1, 20);
-                    }).then(function (data) {
-                        _this2.setState({ fileLoaded: true, records: data });
-                    }).catch(function (e) {
-                        console.log("something went wrong", e);
-                    });
-                }
-            }
+      if (fileName) {
+        var filePresent = isFilePresent(fileName);
+
+        if (filePresent) {
+          this.fetchTotalLength().then(function (length) {
+            _this5.setState({ recordsLength: +length });
+            return _this5.fetchHeader();
+          }).then(function (data) {
+            _this5.setState({ headerData: data });
+            return _this5.fetchBody(_this5.state.start, _this5.state.start + _this5.state.delta);
+          }).then(function (data) {
+            _this5.setState({ fileLoaded: true, records: data });
+          }).catch(function (e) {
+            console.log("something went wrong", e);
+          });
         }
-    }, {
-        key: "renderDataList",
-        value: function renderDataList() {
-            return this.state.records.map(function (record, i) {
-                return _react2.default.createElement(
-                    "tr",
-                    { key: "tr_" + i },
-                    record.map(function (data, j) {
-                        return _react2.default.createElement(
-                            "td",
-                            { key: "td_" + j },
-                            data
-                        );
-                    })
-                );
-            });
-        }
-    }, {
-        key: "renderTable",
-        value: function renderTable() {
+      }
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      window.addEventListener('scroll', this.handleScroll);
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      window.removeEventListener('scroll', this.handleScroll);
+    }
+  }, {
+    key: "handleScroll",
+    value: function handleScroll(e) {
+      var _this6 = this;
+
+      // implement debounce
+      var offsetTop = e.srcElement.body.scrollTop;
+      var scrollHeight = document.body.scrollHeight;
+      var _state = this.state,
+          start = _state.start,
+          delta = _state.delta;
+
+
+      console.log(offsetTop, scrollHeight, window.innerHeight, start + delta, this.state.recordsLength);
+      if (offsetTop + cellHeight >= scrollHeight - window.innerHeight && start + delta <= this.state.recordsLength) {
+        console.log("load more content");
+
+        this.fetchBody(start + delta, start + delta + delta).then(function (data) {
+          _this6.setState({ records: data, start: start + delta });
+        });
+      }
+    }
+  }, {
+    key: "renderHiddenBlock",
+    value: function renderHiddenBlock() {
+      if (this.state.start > 0) {
+        return _react2.default.createElement(
+          "tr",
+          { style: { height: this.state.start * this.state.records.length + "px" } },
+          _react2.default.createElement("td", { colSpan: this.state.records[0].length })
+        );
+      }
+      return null;
+    }
+  }, {
+    key: "renderDataList",
+    value: function renderDataList() {
+      return this.state.records.map(function (record, i) {
+        return _react2.default.createElement(
+          "tr",
+          { key: "tr_" + i },
+          record.map(function (data, j) {
             return _react2.default.createElement(
-                "div",
-                null,
-                _react2.default.createElement(
-                    "table",
-                    null,
-                    _react2.default.createElement(_Header2.default, { data: this.state.headerData }),
-                    _react2.default.createElement(
-                        "tbody",
-                        null,
-                        this.renderDataList()
-                    )
-                )
+              "td",
+              { key: "td_" + j },
+              data
             );
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            return _react2.default.createElement(
-                "div",
-                { id: "drop_area", onDragOver: this.preventDefault, onDrop: this.handleDrop },
-                this.state.fileLoaded ? this.renderTable() : null
-            );
-        }
-    }]);
+          })
+        );
+      });
+    }
+  }, {
+    key: "renderTable",
+    value: function renderTable() {
+      return _react2.default.createElement(
+        "div",
+        null,
+        _react2.default.createElement(
+          "table",
+          null,
+          _react2.default.createElement(_Header2.default, { data: this.state.headerData }),
+          _react2.default.createElement(
+            "tbody",
+            null,
+            this.renderHiddenBlock(),
+            this.renderDataList()
+          )
+        )
+      );
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      return _react2.default.createElement(
+        "div",
+        { id: "drop_area", onDragOver: this.preventDefault, onDrop: this.handleDrop },
+        this.state.fileLoaded ? this.renderTable() : null
+      );
+    }
+  }]);
 
-    return Body;
+  return Body;
 }(_react2.default.Component);
 
 exports.default = Body;
