@@ -10,9 +10,9 @@ class Header extends React.Component {
     let els = this.props.data.map((d, i) => <th key={i}>{d}</th>)
 
     return (
-        <thead>
-            <tr>{els}</tr>
-        </thead>
+      <thead>
+        <tr>{els}</tr>
+      </thead>
     )
   }
 }

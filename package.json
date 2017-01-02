@@ -15,8 +15,10 @@
   "dependencies": {
     "csv": "^1.1.0",
     "electron-prebuilt": "^0.35.2",
+    "envify": "^4.0.0",
     "react": "^15.3.2",
-    "react-dom": "^15.3.2"
+    "react-dom": "^15.3.2",
+    "react-infinite": "^0.10.0"
   },
   "keywords": [],
   "author": "",

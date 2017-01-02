@@ -1,37 +1,24 @@
 import React from "react"
+import Infinite from "react-infinite"
 import { remote } from "electron"
 import Header from "./Header.jsx"
 
+import { debounce } from "./utils"
+
 const { getCSVHeader, getCSVData, isFilePresent, countLines } = remote.require('./main');
-const visibleRows = 20
 const cellHeight = 30 + (3 + 3) + (1 + 1)
-
-function debounce(func, wait, immediate) {
-	var timeout;
-
-  return function() {
-		var context = this, args = arguments;
-		var later = function() {
-			timeout = null;
-			if (!immediate) func.apply(context, args);
-		};
-
-	  var callNow = immediate && !timeout;
-		clearTimeout(timeout);
-		timeout = setTimeout(later, wait);
-		if (callNow) func.apply(context, args);
-	}
-}
 
 class Body extends React.Component {
   constructor(props: object) {
     super(props);
 
     this.fileName = undefined;
-    this.state = { records: [], headerData: [], fileLoaded: false, recordsLength: 0, start: 0, delta: 20 }
+    this.recordsLegth = 0;
+    this.state = { records: [], headerData: [], fileLoaded: false, start: 0, isInfiniteLoading: false }
     this.handleDrop = this.handleDrop.bind(this)
     this.preventDefault = this.preventDefault.bind(this)
-    this.handleScroll = debounce(this.handleScroll, 500).bind(this)
+    //this.handleInfiniteLoad = debounce(this.handleInfiniteLoad 200).bind(this)
+    this.handleInfiniteLoad = this.handleInfiniteLoad.bind(this)
   }
 
   fetchTotalLength() {
@@ -75,11 +62,11 @@ class Body extends React.Component {
       if(filePresent) {
         this.fetchTotalLength()
             .then(length => {
-              this.setState({ recordsLength: +length });
+              this.recordsLength= +length
               return this.fetchHeader()
             }).then(data => {
               this.setState({ headerData: data })
-              return this.fetchBody(this.state.start, this.state.start + this.state.delta)
+              return this.fetchBody(this.state.start, this.state.start + 20)
             }).then(data => {
               this.setState({ fileLoaded: true, records: data })
             }).catch(e => {
@@ -89,32 +76,23 @@ class Body extends React.Component {
     }
   }
 
-  componentDidMount() {
-    window.addEventListener('scroll', this.handleScroll)
-  }
+  handleInfiniteLoad() {
+    let offsetTop = document.body.scrollTop
+    let elementsScrolled = Math.floor(offsetTop / cellHeight)
 
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll)
-  }
+    this.setState({ isInfiniteLoading: true });
 
-  handleScroll(e) {
-    // implement debounce
-    let offsetTop = e.srcElement.body.scrollTop
-    let scrollHeight = document.body.scrollHeight
-    let { start, delta } = this.state
-
-    if((offsetTop + cellHeight) >= scrollHeight - window.innerHeight && (start + delta) <= this.state.recordsLength) {
-      this.fetchBody(start + delta, start + delta + delta).then(data => {
-        this.setState({ records: data, start: start + delta })
+    if(this.state.records.length <= this.recordsLength) {
+      this.fetchBody(this.state.start + elementsScrolled, this.state.start + elementsScrolled + 20).then(data => {
+        let records = [...this.state.records.slice(0, elementsScrolled), ...data]
+        this.setState({
+          isInfiniteLoading: false,
+          records: records
+        })
       })
+    } else {
+      this.setState({ isInfiniteLoading: false })
     }
-  }
-
-  renderHiddenBlock() {
-    if(this.state.start > 0) {
-      return (<tr style={{height: `${this.state.start * this.state.records.length}px`}}><td colSpan={this.state.records[0].length}></td></tr>)
-    }
-    return null
   }
 
   renderDataList() {
@@ -125,12 +103,19 @@ class Body extends React.Component {
 
   renderTable() {
     return (
-      <div>                
+      <div>
         <table>
           <Header data={this.state.headerData}/>
           <tbody>
-            {this.renderHiddenBlock()}
-            {this.renderDataList()}
+            <Infinite
+                infiniteLoadBeginEdgeOffset={700}
+                containerHeight={800}
+                elementHeight={cellHeight}
+                onInfiniteLoad={this.handleInfiniteLoad}
+                isInfiniteLoading={this.state.isInfiniteLoading}
+                useWindowAsScrollContainer>
+              {this.renderDataList()}
+            </Infinite>
           </tbody>
         </table>
       </div>
